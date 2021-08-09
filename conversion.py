@@ -56,9 +56,7 @@ class Functions():
         else:
             Functions.popup_showinfo("You are not able to use this program. Please consult Ben or Justin on why this application is not able to run")
             sys.exit(1)
-
-        print(num_of_files-3)
-        print(finalCpu)
+            
         for i in enumerate(files[3:num_of_files]):
             print(i)
        
