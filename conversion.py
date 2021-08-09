@@ -1,5 +1,8 @@
 # from collections import Counter
 # from functools import partial
+from os import system
+import os
+import sys
 from threading import currentThread
 import time
 from functools import partial
@@ -35,13 +38,25 @@ class Functions():
         a = str(files[0]) + '/' + str(files[1])
     
         date = time.ctime().replace(" ","_").replace(":","~")
-        cpuCount = mp.cpu_count()/2 
+        cpuCount = mp.cpu_count()
         finalCpu = 0
 
-        if cpuCount >= 1:
+        if cpuCount >= 10:
             finalCpu = 6
-        else:
+        elif 9 == cpuCount: 
+            finalCpu = 5
+
+        elif 8 == cpuCount:
+            finalCpu = 4
+        elif 7 == cpuCount:
+            finalCpu = 3
+        elif 6 == cpuCount:
+            finalCpu = 2
+        elif 5 == cpuCount:
             finalCpu = 1
+        else:
+            Functions.popup_showinfo("You are not able to use this program. Please consult Ben or Justin on why this application is not able to run")
+            sys.exit(1)
 
         print(num_of_files-3)
         print(finalCpu)
@@ -49,13 +64,13 @@ class Functions():
             print(i)
        
         pool = mp.Pool(processes=finalCpu)
-
         while limit != (num_of_files-3):
             with alive_bar(num_of_files-3) as percentage:
                 func = partial(Functions.convert, a, files[2], date, (num_of_files-3))
                 for x in pool.imap(func, files[3:num_of_files]):
                     limit += 1
                     percentage()
+                pool.close()
         executionTime = str((time.time() - start))
         Functions.popup_showinfo("done and process time took " + executionTime + " seconds")
 
@@ -67,28 +82,28 @@ class Functions():
         # uses this information to convert the original file into the desired format. Note: right now the only format 
         # to convert to is ".png" but there will be a format selection added
     def convert(final, im_type, date, num_of_files, filePath):
+
+        #local rand for individual thread
         
-        final_path = final + '_' + date + '_' + str(random.SystemRandom()).replace("<random.SystemRandom object at ", "").replace(">","")+ im_type 
+        final_path = final + '_' + date + '_' + str(random.SystemRandom().normalvariate(50.00, 100.00)).replace("<random.SystemRandom object at ", "").replace(">","")+ im_type 
         if im_type == '.jpg':
             try:
                 with PIL.Image.open(filePath) as im:
-                    print("jpg : " + final_path)
-                    # if(im.width > 2000):
-                    #     final_image = im.resize([im.width // 3, im.height // 3],PIL.Image.NEAREST) #create a uniform size plus stay within 1000 x 1000 - 2000 x 2000
-                    #     final_image.save(final_path, compress_level=3, dpi=(300,300), quality=95) #compression level can be changed according to how we want it
-                    # else:
-                    im.save(final_path, compress_level=3, dpi=(300,300), quality=95)
+                    if(im.width > 2000):
+                        final_image = im.resize([im.width // 2, im.height // 2],PIL.Image.NEAREST) #create a uniform size plus stay within 1000 x 1000 - 2000 x 2000
+                        final_image.save(final_path, compress_level=3, dpi=(300,300), quality=95) #compression level can be changed according to how we want it
+                    else:
+                        im.save(final_path, compress_level=3, dpi=(300,300), quality=95)
             except OSError:
                 print(OSError)
         elif im_type == '.png':
             try:
                 with PIL.Image.open(filePath) as im:
-                    # if(im.width > 2000):
-                    #     image = im.resize([im.width // 3, im.height // 3],PIL.Image.NEAREST) #create a uniform size plus stay within 1000 x 1000 - 2000 x 2000
-                    #     final_image = PIL.ImageEnhance.Sharpness(image).enhance(2.5)
-                    #     final_image.save(final_path, compress_level=3, dpi=(300,300), quality=95) #compression level can be changed according to how we want it
-                    # else:
-                    print("PNG : " + final_path)
-                    im.save(final_path, compress_level=3, dpi=(300,300), quality=95)
+                    if(im.width > 2000):
+                        image = im.resize([im.width // 2, im.height // 2],PIL.Image.NEAREST) #create a uniform size plus stay within 1000 x 1000 - 2000 x 2000
+                        final_image = PIL.ImageEnhance.Sharpness(image).enhance(2.5)
+                        final_image.save(final_path, compress_level=3, dpi=(300,300), quality=95) #compression level can be changed according to how we want it
+                    else:
+                        im.save(final_path, compress_level=3, dpi=(300,300), quality=95)
             except OSError:
                 print(OSError)

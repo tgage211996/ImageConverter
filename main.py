@@ -94,7 +94,7 @@ class GUI(tkinter.Tk):
             self.after(50,self.check_thread)
         else:
             self.destroy()
-            os.system("\dist\FileConverter.exe")
+            os.system("ImageConverterApplication.exe")
 
 def main():
     """A dummy docstring"""
