@@ -1,9 +1,7 @@
 # from collections import Counter
 # from functools import partial
 from os import system
-import os
 import sys
-from threading import currentThread
 import time
 from functools import partial
 import multiprocessing as mp
@@ -15,6 +13,7 @@ import win32console
 import win32gui
 import win32con
 import random
+import cv2 as cv
 
 class Functions():
     
@@ -66,11 +65,14 @@ class Functions():
         pool = mp.Pool(processes=finalCpu)
         while limit != (num_of_files-3):
             with alive_bar(num_of_files-3) as percentage:
-                func = partial(Functions.convert, a, files[2], date, (num_of_files-3))
+                func = partial(Functions.convert, a, files[2], date)
                 for x in pool.imap(func, files[3:num_of_files]):
                     limit += 1
                     percentage()
                 pool.close()
+
+
+        
         executionTime = str((time.time() - start))
         Functions.popup_showinfo("done and process time took " + executionTime + " seconds")
 
@@ -81,29 +83,21 @@ class Functions():
         # function that takees a file path, count, the new file name, and the directory where the file will be located
         # uses this information to convert the original file into the desired format. Note: right now the only format 
         # to convert to is ".png" but there will be a format selection added
-    def convert(final, im_type, date, num_of_files, filePath):
-
-        #local rand for individual thread
+    def convert(final, im_type, date, filePath):
         
         final_path = final + '_' + date + '_' + str(random.SystemRandom().normalvariate(50.00, 100.00)).replace("<random.SystemRandom object at ", "").replace(">","")+ im_type 
         if im_type == '.jpg':
-            try:
-                with PIL.Image.open(filePath) as im:
-                    if(im.width > 2000):
-                        final_image = im.resize([im.width // 2, im.height // 2],PIL.Image.NEAREST) #create a uniform size plus stay within 1000 x 1000 - 2000 x 2000
-                        final_image.save(final_path, compress_level=3, dpi=(300,300), quality=95) #compression level can be changed according to how we want it
-                    else:
-                        im.save(final_path, compress_level=3, dpi=(300,300), quality=95)
-            except OSError:
-                print(OSError)
+            
+            im = cv.imread(filePath,cv.IMREAD_COLOR)
+            cv.imwrite(final_path,im, [int(cv.IMWRITE_JPEG_QUALITY), 100 , cv.IMWRITE_JPEG_OPTIMIZE, 36])
+          
         elif im_type == '.png':
-            try:
-                with PIL.Image.open(filePath) as im:
-                    if(im.width > 2000):
-                        image = im.resize([im.width // 2, im.height // 2],PIL.Image.NEAREST) #create a uniform size plus stay within 1000 x 1000 - 2000 x 2000
-                        final_image = PIL.ImageEnhance.Sharpness(image).enhance(2.5)
-                        final_image.save(final_path, compress_level=3, dpi=(300,300), quality=95) #compression level can be changed according to how we want it
-                    else:
-                        im.save(final_path, compress_level=3, dpi=(300,300), quality=95)
-            except OSError:
-                print(OSError)
+            width=None
+            height=None
+            im = cv.imread(filePath,cv.IMREAD_COLOR)
+            if ( im.shape[0] > 2000 or im.shape[1] > 2000):
+                width = int(im.shape[1] * 60 / 100)
+                height = int(im.shape[0] * 60 / 100)
+            res = cv.resize(im, (width,height),interpolation=cv.INTER_AREA)
+            cv.imwrite(final_path,res, [cv.IMWRITE_PNG_COMPRESSION,2] )
+            
